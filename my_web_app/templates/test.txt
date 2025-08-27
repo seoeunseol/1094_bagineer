@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Darkly Theme from Bootswatch -->
+    <link href="https://bootswatch.com/5/darkly/bootstrap.min.css" rel="stylesheet">
+    <title>차량 배터리 모니터링</title>
+    <style>
+      body {
+        background-color: #222;
+        color: #eee;
+      }
+      .container {
+        max-width: 1000px;
+        margin-top: 50px;
+        padding: 30px;
+        background-color: #333;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+      }
+      .card {
+        background-color: #444;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s ease-in-out;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+      }
+      .card-header {
+        background-color: #555;
+        border-bottom: 1px solid #666;
+        color: #fff;
+        font-weight: bold;
+      }
+      .battery-icon {
+        width: 60px;
+        height: 60px;
+        margin-right: 15px;
+      }
+      .status-text {
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
+      .status-ok {
+        color: #28a745; /* Green */
+      }
+      .status-warning {
+        color: #ffc107; /* Yellow */
+      }
+      .status-danger {
+        color: #dc3545; /* Red */
+      }
+      .relay-buttons .btn {
+        margin: 5px;
+        min-width: 120px;
+      }
+      .temp-display {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center mb-5">차량 배터리 및 시스템 대시보드</h1>
+
+      <div class="row mb-4">
+        {% for pack in battery_packs %}
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+              <img src="https://cdn-icons-png.flaticon.com/512/310/310023.png" alt="Battery Icon" class="battery-icon">
+              <span>배터리 팩 #{{ pack.id }}</span>
+            </div>
+            <div class="card-body text-center">
+              <p class="temp-display">{{ pack.temp }}°C</p>
+              <p class="status-text">
+                {% if pack.status == '정상' %}
+                  <span class="status-ok">정상</span>
+                {% elif pack.status == '충격 감지' %}
+                  <span class="status-danger">충격 감지!</span>
+                {% else %}
+                  <span class="status-warning">{{ pack.status }}</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="row mt-5">
+        <div class="col-12 text-center">
+          <h3 class="mb-3">릴레이 제어</h3>
+          <div class="relay-buttons">
+            <button class="btn btn-success">릴레이 1 ON</button>
+            <button class="btn btn-danger">릴레이 1 OFF</button>
+            <button class="btn btn-success">릴레이 2 ON</button>
+            <button class="btn btn-danger">릴레이 2 OFF</button><br class="d-md-none d-block">
+            <button class="btn btn-success">릴레이 3 ON</button>
+            <button class="btn btn-danger">릴레이 3 OFF</button>
+            <button class="btn btn-success">릴레이 4 ON</button>
+            <button class="btn btn-danger">릴레이 4 OFF</n>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  </body>
+</html>

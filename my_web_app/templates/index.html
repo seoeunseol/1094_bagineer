@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Darkly Theme from Bootswatch -->
+    <link
+      href="https://bootswatch.com/5/darkly/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <title>차량 배터리 모니터링</title>
+    <style>
+      body {
+        background-color: #222;
+        color: #eee;
+      }
+      .container {
+        max-width: 1000px;
+        margin-top: 50px;
+        padding: 30px;
+        background-color: #333;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+      }
+      .card {
+        background-color: #444;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s ease-in-out;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+      }
+      .card-header {
+        background-color: #555;
+        border-bottom: 1px solid #666;
+        color: #fff;
+        font-weight: bold;
+        text-align: center;
+      }
+      .pack-title {
+        font-size: 1.5rem;
+      }
+      .status-text {
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+      .status-ok {
+        color: #28a745; /* Green */
+      }
+      .status-warning {
+        color: #ffc107; /* Yellow */
+      }
+      .status-danger {
+        color: #dc3545; /* Red */
+      }
+      .relay-buttons .btn {
+        margin: 5px;
+        min-width: 120px;
+      }
+      .temp-display {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #007bff;
+      }
+      .pressure-display {
+        font-size: 1.65rem;
+        font-weight: bold;
+        color: #007bff;
+      }
+      .main-image {
+        max-width: 80%;
+        height: auto;
+        display: block;
+        margin: 0 auto 30px auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center mb-4">차량 배터리 및 시스템 대시보드</h1>
+
+      <!-- 사용자 이미지 삽입 위치 -->
+      <img
+        src="{{ url_for('static', filename='my_car.png') }}"
+        alt="차량 메인 이미지"
+        class="main-image"
+      />
+
+      <div class="row mb-4">
+        {% for pack in battery_packs %}
+          <div class="col-md-6 justify-content-center">
+            <div class="card h-100">
+              <div class="card-header text-center">
+                <span class="pack-title">
+                  {% if pack.id in [1,2] %}
+                    배터리 팩 #{{ pack.id }}
+                  {% endif %}
+                </span>
+              </div>
+              <div class="card-body text-center">
+                {% if pack.id in [1,2] %}
+                  <!-- 온도 표시 -->
+                  <p class="sensor-display temp-display" data-id="{{ pack.id }}">
+                    {{ pack.temp }}°C
+                  </p>
+                {% else %}
+                  <!-- 압력 표시 -->
+                  <p class="sensor-display pressure-display" data-id="{{ pack.id }}">
+                    압력1: <span class="pressure1">{{ pack.pressure1 }}</span> &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; 압력2: <span class="pressure2">{{ pack.pressure2 }}</span>
+                  </p>
+                {% endif %}
+
+                <p class="status-text" data-id="{{ pack.id }}">
+                  {% if pack.status == '정상' %}
+                  <span class="status-ok">정상</span>
+                  {% elif pack.status == '충격 감지' %}
+                  <span class="status-danger">충격 감지</span>
+                  {% elif pack.status == '배터리 과부화' %}
+                  <span class="status-danger">배터리 과부화</span>
+                  {% elif pack.status == '배터리 과부화 및 충격 감지' %}
+                  <span class="status-danger">배터리 과부화 및 충격 감지</span>
+                  {% else %}
+                  <span class="status-warning">{{ pack.status }}</span>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+
+      <div class="row mt-5">
+        <div class="col-12 text-center">
+          <h3 class="mb-3">릴레이 제어</h3>
+            <div class="relay-buttons">
+              {% for i in [1, 2] %}
+              <button
+                id="relay{{ i }}_btn"
+                class="btn btn-danger"
+                data-auto="false"
+                onclick="toggleRelayManual({{ i }})"
+              >
+                릴레이 {{ i }} OFF
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      function toggleRelayManual(relayNum) {
+        const button = document.getElementById(`relay${relayNum}_btn`);
+        if (!button || button.dataset.auto === "true") return; // 자동 상태면 클릭 무시
+
+        // 현재 상태 확인
+        let currentState = button.textContent.includes("ON") ? "ON" : "OFF";
+        let newState = currentState === "ON" ? "OFF" : "ON";
+
+        button.textContent = `릴레이 ${relayNum} ${newState}`;
+        button.classList.toggle("btn-success", newState === "ON");
+        button.classList.toggle("btn-danger", newState === "OFF");
+
+        // 서버 전송
+        fetch("/api/relay", 
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ relayNum: relayNum, state: newState }),
+        })
+          .then((res) => res.json())
+          .then((data) => console.log("서버 응답:", data))
+          .catch((err) => console.error("릴레이 제어 에러:", err));
+      }
+
+      // 자동 ON (온도 ≥ 60)
+      function toggleRelayAuto(relayNum) {
+        const button = document.getElementById(`relay${relayNum}_btn`);
+        if (!button) return;
+
+        if (button.textContent.includes("ON") && button.dataset.auto === "true") {
+          return;
+        }
+
+        button.textContent = `릴레이 ${relayNum} ON`;
+        button.classList.add("btn-success");
+        button.classList.remove("btn-danger");
+
+        button.dataset.auto = "true"; // 자동 상태 표시
+
+        // 서버 전송
+        fetch("/api/relay", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ relayNum: relayNum, state: "ON" }),
+        })
+          .then((res) => res.json())
+          .then((data) => console.log("서버 응답:", data))
+          .catch((err) => console.error("릴레이 제어 에러:", err));
+      }
+
+
+      function updateBatteryStatus() {
+        fetch("/api/battery_status")
+          .then((response) => response.json())
+          .then((data) => {
+            data.forEach((pack) => {
+              // 온도 표시 (id 1,2)
+              if (pack.id === 1 || pack.id === 2) {
+                const tempElem = document.querySelector(`.temp-display[data-id='${pack.id}']`);
+                if (tempElem) tempElem.textContent = `${pack.temp}°C`;
+
+                if (pack.temp >= 60) toggleRelayAuto(pack.id);
+                else {
+                  const button = document.getElementById(`relay${pack.id}_btn`);
+                  if (button) button.dataset.auto = "false";
+                }
+              }
+
+              const p1Span = document.querySelector(`.pressure-display[data-id='${pack.id}'] .pressure1`);
+              const p2Span = document.querySelector(`.pressure-display[data-id='${pack.id}'] .pressure2`);
+              if (p1Span) p1Span.textContent = pack.pressure1;
+              if (p2Span) p2Span.textContent = pack.pressure2;
+
+              // 상태 표시 (모든 팩)
+              const statusElem = document.querySelector(`.status-text[data-id='${pack.id}']`);
+              if (statusElem) {
+                let statusText = pack.status;
+                let statusClass = "status-warning";
+                if (statusText === "정상") statusClass = "status-ok";
+                else if (statusText.includes("충격") || statusText.includes("과부화"))
+                  statusClass = "status-danger";
+
+                statusElem.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
+              }
+            });
+          })
+          .catch((err) => console.error("배터리 상태 업데이트 에러:", err));
+      }
+
+      setInterval(updateBatteryStatus, 100);
+
+      // 페이지 로드 시 초기 데이터 표시
+      updateBatteryStatus();
+    </script>
+  </body>
+</html>
