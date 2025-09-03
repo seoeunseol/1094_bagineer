@@ -103,9 +103,9 @@
               </div>
               <div class="card-body text-center">
                 {% if pack.id in [1,2] %}
-                  <!-- 온도 표시 -->
+                  <!-- 온도 표시 (보기 좋게 | 구분) -->
                   <p class="sensor-display temp-display" data-id="{{ pack.id }}">
-                    {{ pack.temp }}°C
+                    {{ pack.temp[0] }}°C | {{ pack.temp[1] }}°C | {{ pack.temp[2] }}°C
                   </p>
                 {% else %}
                   <!-- 압력 표시 -->
@@ -219,9 +219,9 @@
               // 온도 표시 (id 1,2)
               if (pack.id === 1 || pack.id === 2) {
                 const tempElem = document.querySelector(`.temp-display[data-id='${pack.id}']`);
-                if (tempElem) tempElem.textContent = `${pack.temp}°C`;
+                if (tempElem) tempElem.textContent = `${pack.temp[0]}°C | ${pack.temp[1]}°C | ${pack.temp[2]}°C`;
 
-                if (pack.temp >= 60) toggleRelayAuto(pack.id);
+                if (Math.max(...pack.temp) >= 60) toggleRelayAuto(pack.id);
                 else {
                   const button = document.getElementById(`relay${pack.id}_btn`);
                   if (button) button.dataset.auto = "false";
