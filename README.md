@@ -1,7 +1,7 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/임베디드%20SW%20경진대회-제23회-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Team-1094_bagineer-green?style=for-the-badge" />
-</p>
+# SafeCell: EV 배터리 화재 예방 및 실시간 모니터링 시스템
+### 1094_bagineer  
+**제23회 임베디드 소프트웨어 경진대회 출품작**
+
 
 
 ## 📌 프로젝트 개요
